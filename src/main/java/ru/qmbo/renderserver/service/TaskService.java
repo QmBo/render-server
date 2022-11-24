@@ -1,7 +1,9 @@
 package ru.qmbo.renderserver.service;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import ru.qmbo.renderserver.model.CreateRequest;
 import ru.qmbo.renderserver.model.Stats;
 import ru.qmbo.renderserver.model.Task;
@@ -10,6 +12,8 @@ import ru.qmbo.renderserver.repository.TaskRepository;
 
 import java.util.*;
 import java.util.concurrent.Executor;
+
+import static java.lang.String.format;
 
 /**
  * TaskService
@@ -25,6 +29,8 @@ public class TaskService {
     private final UserService userService;
     private final static String RENDERING = "RENDERING";
     private final static String COMPLETE = "COMPLETE";
+    private static final String SERVER = "http://localhost:8081";
+
 
     /**
      * Instantiates a new Task service.
@@ -78,6 +84,9 @@ public class TaskService {
                 task.setCompleteDate(new Date(System.currentTimeMillis()));
                 task.setStatus(COMPLETE);
                 this.taskRepository.save(task);
+                RestTemplate template = new RestTemplate();
+                final String baseUrl = format("%s/tasks", SERVER);
+                template.postForEntity(baseUrl, task, String.class);
             } catch (InterruptedException e) {
                 log.error("Interrupt exception.", e);
             }
